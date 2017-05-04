@@ -28,52 +28,54 @@ def K_12_prefactor(omega):
     prefactor = - 1. * omega_p**2. / (omega * omega) * 1./(4. * theta_e**2. * special.kn(2, 1./theta_e))
     return prefactor
 
-def K_12_integrand(p_perp_bar, p_z_bar, tau_prime, omega):    
-    prefactor = 1j
-    k_perp    = omega / c * np.sin(theta)
-    k_z       = omega / c * np.cos(theta)
-    gamma     = np.sqrt(1. + p_perp_bar**2. + p_z_bar**2.)
+def K_12_integrand(gamma, cos_xi, tau_prime, omega):    
+    prefactor  = 1j
+    beta       = np.sqrt(1. - 1./gamma**2.)
+    sin_xi     = np.sqrt(1. - cos_xi**2.)
+    p_perp_bar = gamma * beta * sin_xi
+    p_z_bar    = gamma * beta * cos_xi
     beta_perp = p_perp_bar / gamma
     beta_z    = p_z_bar    / gamma
     b         = omega/(epsilon * omega_c) * np.sin(theta) * gamma * beta_perp
     
-    term1 = p_perp_bar**3. / gamma**2. * np.exp(-gamma/theta_e)
-    term2 = np.exp(1j * (1. - beta_z * np.cos(theta)) * tau_prime * epsilon) #WHY EXTRA EPSILON IN THIS?
+    term1 = p_perp_bar**2. / gamma**2. * np.exp(-gamma/theta_e)
+    term2 = np.exp(1j * (1. - beta_z * np.cos(theta)) * tau_prime)
     term3 = np.sin((epsilon * omega_c / omega) * tau_prime / gamma) * special.j0(2. * b * np.sin((epsilon * omega_c / omega) * tau_prime / (2. * gamma)))
     ans   = prefactor * term1 * term2 * term3
-    return ans
+    return ans * gamma**2. * beta 
 
 def K_32_prefactor(omega):
     prefactor = omega_p**2. / (omega * omega) * 1./(2. * theta_e**2. * special.kn(2, 1./theta_e))
     return prefactor
 
-def K_32_integrand(p_perp_bar, p_z_bar, tau_prime, omega):
+def K_32_integrand(gamma, cos_xi, tau_prime, omega):
     prefactor = 1.
-    k_perp    = omega / c * np.sin(theta)
-    k_z       = omega / c * np.cos(theta)
-    gamma     = np.sqrt(1. + p_perp_bar**2. + p_z_bar**2.)
+    beta       = np.sqrt(1. - 1./gamma**2.)
+    sin_xi     = np.sqrt(1. - cos_xi**2.)
+    p_perp_bar = gamma * beta * sin_xi
+    p_z_bar    = gamma * beta * cos_xi
     beta_perp = p_perp_bar / gamma
     beta_z    = p_z_bar    / gamma
     b         = omega/(epsilon * omega_c) * np.sin(theta) * gamma * beta_perp
     
-    term1 = p_perp_bar**2. * p_z_bar / gamma**2. * np.exp(-gamma/theta_e)
-    term2 = np.exp(1j * (1. - beta_z * np.cos(theta)) * tau_prime * epsilon) #why epsilon here?
+    term1 = p_perp_bar * p_z_bar / gamma**2. * np.exp(-gamma/theta_e)
+    term2 = np.exp(1j * (1. - beta_z * np.cos(theta)) * tau_prime)
     term3 = np.sin((epsilon * omega_c / omega) * tau_prime / (2. * gamma)) * special.jn(1, 2. * b * np.sin((epsilon * omega_c / omega) * tau_prime / (2. * gamma)))
     ans   = prefactor * term1 * term2 * term3
-    return ans * -1. #why minus sign here?
+    return ans * gamma**2. * beta 
 
 # In[54]:
 
 def K_12_p_integrated(tau_prime, omega):
-    real_part = dblquad(lambda p_perp, p_z: K_12_integrand(p_perp, p_z, tau_prime, omega).real, 
-                       -np.inf, np.inf, lambda x: 0., lambda x: np.inf)
+    real_part = dblquad(lambda gamma, cos_xi: K_12_integrand(gamma, cos_xi, tau_prime, omega).real, 
+                       -1, 1, lambda x: 1., lambda x: np.inf)
     ans = real_part[0]
     return ans
 
 
 def K_32_p_integrated(tau_prime, omega):
-    real_part = dblquad(lambda p_perp, p_z: K_32_integrand(p_perp, p_z, tau_prime, omega).real, 
-                       -np.inf, np.inf, lambda x: 0., lambda x: np.inf)
+    real_part = dblquad(lambda gamma, cos_xi: K_32_integrand(gamma, cos_xi, tau_prime, omega).real, 
+                       -1, 1, lambda x: 1., lambda x: np.inf)
     ans = real_part[0]
     return ans
 
@@ -81,7 +83,7 @@ def K_32_p_integrated(tau_prime, omega):
 time_before = time.time()
 
 #omega_mult = np.logspace(0., 3., 10) * omega_c
-omega_mult = [10. * omega_c]
+omega_mult = [1. * omega_c]
 omega = omega_mult[0]
 
 #print omega_mult / omega_c
@@ -89,11 +91,11 @@ omega = omega_mult[0]
 for omega in omega_mult:
 	K_12_ans  = fixed_quad(lambda tau_prime: np.vectorize(K_12_p_integrated)(tau_prime, omega), 0., 30., n = 45)[0]
 	print 'p1 done'
-	K_12_ans += fixed_quad(lambda tau_prime: np.vectorize(K_12_p_integrated)(tau_prime, omega), 30., 60., n = 45)[0]
-	print 'p2 done'
-	K_12_ans += fixed_quad(lambda tau_prime: np.vectorize(K_12_p_integrated)(tau_prime, omega), 60., 90., n = 45)[0]
-	print 'p3 done'
-	K_12_ans += fixed_quad(lambda tau_prime: np.vectorize(K_12_p_integrated)(tau_prime, omega), 90., 120., n = 45)[0]
+#	K_12_ans += fixed_quad(lambda tau_prime: np.vectorize(K_12_p_integrated)(tau_prime, omega), 30., 60., n = 45)[0]
+#	print 'p2 done'
+#	K_12_ans += fixed_quad(lambda tau_prime: np.vectorize(K_12_p_integrated)(tau_prime, omega), 60., 90., n = 45)[0]
+#	print 'p3 done'
+#	K_12_ans += fixed_quad(lambda tau_prime: np.vectorize(K_12_p_integrated)(tau_prime, omega), 90., 120., n = 45)[0]
 #	print 'p4 done'
 #	K_12_ans += fixed_quad(lambda tau_prime: np.vectorize(K_12_p_integrated)(tau_prime, omega), 120., 150., n = 45)[0]
 #	print 'p5 done'
@@ -104,11 +106,11 @@ for omega in omega_mult:
 
 	K_32_ans  = fixed_quad(lambda tau_prime: np.vectorize(K_32_p_integrated)(tau_prime, omega), 0., 30., n = 45)[0]
 	print 'p1 done'
-	K_32_ans += fixed_quad(lambda tau_prime: np.vectorize(K_32_p_integrated)(tau_prime, omega), 30., 60., n = 45)[0]
+#	K_32_ans += fixed_quad(lambda tau_prime: np.vectorize(K_32_p_integrated)(tau_prime, omega), 30., 60., n = 45)[0]
 	print 'p2 done'
-	K_32_ans += fixed_quad(lambda tau_prime: np.vectorize(K_32_p_integrated)(tau_prime, omega), 60., 90., n = 45)[0]
-	print 'p3 done'
-	K_32_ans += fixed_quad(lambda tau_prime: np.vectorize(K_32_p_integrated)(tau_prime, omega), 90., 120., n = 45)[0]
+#	K_32_ans += fixed_quad(lambda tau_prime: np.vectorize(K_32_p_integrated)(tau_prime, omega), 60., 90., n = 45)[0]
+#	print 'p3 done'
+#	K_32_ans += fixed_quad(lambda tau_prime: np.vectorize(K_32_p_integrated)(tau_prime, omega), 90., 120., n = 45)[0]
 #	print 'p4 done'
 #	K_32_ans += fixed_quad(lambda tau_prime: np.vectorize(K_32_p_integrated)(tau_prime, omega), 120., 150., n = 45)[0]
 #	print 'p5 done'
