@@ -271,39 +271,39 @@ def K_12_p_integrateda(tau_prime, omega):
     ans       = real_part[0]
     return ans
 
-def alpha_V(omega, tau_max):
-	#K_12 = quad(lambda tau: np.vectorize(K_12_p_integrateda)(tau, omega), 0., np.inf)[0]
-	#K_32 = quad(lambda tau: np.vectorize(K_32_p_integrateda)(tau, omega), 0., np.inf)[0]
-	K_12 = quad(lambda tau: np.vectorize(K_12_improved_gam)(tau, omega), 0., tau_max)[0]
-        K_32 = quad(lambda tau: np.vectorize(K_32_improved_gam)(tau, omega), 0., tau_max)[0]
-	ans = (K_12 * K_12_prefactor(omega) * np.cos(theta) 
-		 + K_32 * K_32_prefactor(omega) * np.sin(theta)) / c * omega
-
-	return ans
-
-#def alpha_V(omega, num_steps, step):
-#	K_12 = 0.
-#	K_32 = 0.
-#	for i in range(num_steps):
-#		print i, num_steps
-#		if(i * step < 200):
-#			K_12 += quad(lambda tau: np.vectorize(K_12_p_integrateda)(tau, omega), 
-#				     i*step, (i+1)*step)[0]
-#			K_32 += quad(lambda tau: np.vectorize(K_32_p_integrateda)(tau, omega), 
-#				     i*step, (i+1)*step)[0]
-#		else:
-#			K_12 += quad(lambda tau: np.vectorize(K_12_p_integrated1)(tau, omega, 0.01, 15.), 
-#                       		     i*step, (i+1)*step)[0]
-#                	K_32 += quad(lambda tau: np.vectorize(K_32_p_integrated1)(tau, omega, 0.01, 15), 
-#                            	i*step, (i+1)*step)[0]
-#
+#def alpha_V(omega, tau_max):
+#	K_12 = quad(lambda tau: np.vectorize(K_12_p_integrateda)(tau, omega), 0., np.inf)[0]
+#	K_32 = quad(lambda tau: np.vectorize(K_32_p_integrateda)(tau, omega), 0., np.inf)[0]
+#	K_12 = quad(lambda tau: np.vectorize(K_12_improved_gam)(tau, omega), 0., tau_max)[0]
+#        K_32 = quad(lambda tau: np.vectorize(K_32_improved_gam)(tau, omega), 0., tau_max)[0]
 #	ans = (K_12 * K_12_prefactor(omega) * np.cos(theta) 
 #		 + K_32 * K_32_prefactor(omega) * np.sin(theta)) / c * omega
 #
 #	return ans
 
+def alpha_V(omega, num_steps, step):
+	K_12 = 0.
+	K_32 = 0.
+	for i in range(num_steps):
+		print 'step', i+1, '/', num_steps
+#		if(i * step < 200):
+		K_12 += quad(lambda tau: np.vectorize(K_12_improved_gam)(tau, omega), 
+			     i*step, (i+1)*step)[0]
+		K_32 += quad(lambda tau: np.vectorize(K_32_improved_gam)(tau, omega), 
+			     i*step, (i+1)*step)[0]
+#		else:
+#			K_12 += quad(lambda tau: np.vectorize(K_12_p_integrated1)(tau, omega, 0.01, 15.), 
+#                       	i*step, (i+1)*step)[0]
+#                	K_32 += quad(lambda tau: np.vectorize(K_32_p_integrated1)(tau, omega, 0.01, 15), 
+#                            	i*step, (i+1)*step)[0]
+
+	ans = (K_12 * K_12_prefactor(omega) * np.cos(theta) 
+		 + K_32 * K_32_prefactor(omega) * np.sin(theta)) / c * omega
+
+	return ans
+
 time_before = time.time()
-print alpha_V(100. * omega_c, 150.)
+print alpha_V(200. * omega_c, 11, 30)
 time_after  = time.time()
 print 'time elapsed: ', time_after - time_before
 
