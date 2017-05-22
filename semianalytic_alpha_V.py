@@ -51,6 +51,7 @@ theta   = np.pi/3.    #observer angle
 omega_p = np.sqrt(n_e * e**2. / (m * epsilon0))     # plasma frequency    (=1 in these units)
 omega_c = e * B / (m * c)                           # cyclotron frequency (=1 in these units)
 
+
 def K_12_prefactor(omega):
     prefactor = - 1. * omega_p**2. / (omega * omega) * 1./(4. * theta_e**2. * special.kn(2, 1./theta_e))
     return prefactor
@@ -59,7 +60,7 @@ def K_32_prefactor(omega):
     prefactor = omega_p**2. / (omega * omega) * 1./(2. * theta_e**2. * special.kn(2, 1./theta_e))
     return prefactor
 
-def K_12_xi_integrateda(gamma, tau_prime, omega):    
+def K_12_xi_integrateda(gamma, tau_prime, omega):   
     prefactor  = 1j
     beta       = np.sqrt(1. - 1./gamma**2.)
     alpha      = beta * np.cos(theta) * tau_prime
@@ -133,9 +134,45 @@ def K_12_p_integrateda(tau_prime, omega):
     ans       = real_part[0]
     return ans
 
-def alpha_V(omega):
-	K_12 = quad(lambda tau: np.vectorize(K_12_p_integrateda)(tau, omega), 0., np.inf)[0]
-	K_32 = quad(lambda tau: np.vectorize(K_32_p_integrateda)(tau, omega), 0., np.inf)[0]
+def K_12_p_integrated1(tau_prime, omega, step_size, gamma_limit):
+    start = 1.
+    end   = start + step_size
+    real_part = 0.
+    while(end < gamma_limit):
+        real_part += quad(lambda gamma: K_12_xi_integrateda(gamma, tau_prime, omega).real, start, end)[0]
+        start = end
+        end   += step_size
+    ans       = real_part
+    return ans
+
+def K_32_p_integrated1(tau_prime, omega, step_size, gamma_limit):
+    start = 1.
+    end   = start + step_size
+    real_part = 0.
+    while(end < gamma_limit):
+        real_part += quad(lambda gamma: K_32_xi_integrateda(gamma, tau_prime, omega).real, start, end)[0]
+        start = end
+        end   += step_size
+    ans       = real_part
+    return ans
+
+
+
+def alpha_V(omega, num_steps, step):
+	K_12 = 0.
+	K_32 = 0.
+	for i in range(num_steps):
+		print i, num_steps
+		if(i * step < 200):
+			K_12 += quad(lambda tau: np.vectorize(K_12_p_integrateda)(tau, omega), 
+				     i*step, (i+1)*step)[0]
+			K_32 += quad(lambda tau: np.vectorize(K_32_p_integrateda)(tau, omega), 
+				     i*step, (i+1)*step)[0]
+		else:
+			K_12 += quad(lambda tau: np.vectorize(K_12_p_integrated1)(tau, omega, 0.01, 15.), 
+                       		     i*step, (i+1)*step)[0]
+                	K_32 += quad(lambda tau: np.vectorize(K_32_p_integrated1)(tau, omega, 0.01, 15), 
+                            	i*step, (i+1)*step)[0]
 
 	ans = (K_12 * K_12_prefactor(omega) * np.cos(theta) 
 		 + K_32 * K_32_prefactor(omega) * np.sin(theta)) / c * omega
@@ -143,7 +180,9 @@ def alpha_V(omega):
 	return ans
 
 time_before = time.time()
-print alpha_V(1. * omega_c)
+#tau = np.linspace(420., 450., 1000)
+#pl.plot(tau, np.vectorize(K_12_p_integrateda)(tau, 300. * omega_c))
+#pl.show()
+print alpha_V(300. * omega_c, 18, 30.)
 time_after  = time.time()
 print 'time elapsed: ', time_after - time_before
-

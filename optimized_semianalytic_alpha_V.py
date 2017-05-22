@@ -303,7 +303,7 @@ def alpha_V(omega, num_steps, step):
 	return ans
 
 time_before = time.time()
-print alpha_V(400. * omega_c, 25, 30)
+print alpha_V(400. * omega_c, 26, 30)
 time_after  = time.time()
 print 'time elapsed: ', time_after - time_before
 

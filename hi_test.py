@@ -148,35 +148,47 @@ def K_32_p_integrator(tau_prime, omega):
 #-----------------------------------------------------------------------------#
 time_before = time.time()
 
-#omega_mult = np.logspace(0., 3., 10) * omega_c
-#omega_mult = [200. * omega_c]
-omega = 1. * omega_c
+#frequency and integrator parameters#
+omega = 150. * omega_c
 
-K_12_ans = 0.
-K_32_ans = 0.
-i        = 0.
-j        = 0.
-step     = 30.
-num_pts  = 45
-tolerance = 0.05
+step        = 30.
+num_pts     = 45
+tolerance   = 0.05
+max_counter = 5
 
-while(i == 0. or np.abs(step_ans_12 / K_12_ans) > tolerance):
+#define counters and stuff#
+counter_12  = 0
+counter_32  = 0
+K_12_ans    = 0.
+K_32_ans    = 0.
+i           = 0.
+j           = 0.
+while(i == 0. or counter_12 < max_counter):
 	time_before_12 = time.time()
 	step_ans_12    = fixed_quad(lambda tau_prime: np.vectorize(K_12_p_integrator)(tau_prime, omega), 
 		  						   i*step, (i+1)*step, n = num_pts)[0]
 	time_after_12  = time.time()
 	K_12_ans      += step_ans_12
-	print 'K_12 i  =', i*step, (i+1)*step, np.abs(step_ans_12/K_12_ans), time_after_12 - time_before_12
+	print 'K_12 {:1.1e} {:1.1e} {:1.3e} {:.1f} sec'.format(i*step, (i+1)*step, 
+							np.abs(step_ans_12/K_12_ans), 
+							time_after_12 - time_before_12)
 	i             += 1.
+	if(np.abs(step_ans_12 / K_12_ans) < tolerance and i != 1.):
+		counter_12 += 1
 
-while(j == 0. or np.abs(step_ans_32 / K_32_ans) > tolerance):
+
+while(j == 0. or counter_32 < max_counter):
 	time_before_32 = time.time()
         step_ans_32    = fixed_quad(lambda tau_prime: np.vectorize(K_32_p_integrator)(tau_prime, omega), 
 								   j*step, (j+1)*step, n = num_pts)[0]
         time_after_32  = time.time()
 	K_32_ans    += step_ans_32
-	print 'K_32 j =', j*step, (j+1)*step, np.abs(step_ans_32/K_32_ans), time_after_32 - time_before_32
-        j += 1.
+	print 'K_32 {:1.1e} {:1.1e} {:1.3e} {:.1f} sec'.format(j*step, (j+1)*step, 
+							np.abs(step_ans_32/K_32_ans), 
+							time_after_32 - time_before_32)
+    	if(np.abs(step_ans_32 / K_32_ans) < tolerance and i != 1.):
+		counter_32 += 1
+	j += 1.
 
 ans2 = 4. * np.pi * epsilon0 * omega * (K_12_prefactor(omega) * K_12_ans * np.cos(theta)
 	                              + K_32_prefactor(omega) * K_32_ans * np.sin(theta))
