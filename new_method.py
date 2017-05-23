@@ -262,17 +262,26 @@ def tau_first_32_mod(gamma, omega, factor):
 
 
 def alpha_V_new(omega):
-    K_12 = quad(lambda gamma: np.vectorize(tau_first_12_mod)(gamma, omega, 1), 
-		start_search_12(omega), np.inf)[0]
-    K_32 = quad(lambda gamma: np.vectorize(tau_first_32_mod)(gamma, omega, 1), 
-		start_search_32(omega), np.inf)[0]
-    print start_search_12(omega), start_search_32(omega)
+
+    if(omega/omega_c < 10.):
+	start_12 = 1.
+	start_32 = 1.
+    else:
+	start_12 = start_search_12(omega)
+	start_32 = start_search_32(omega)
+
+
+    K_12 = fixed_quad(lambda gamma: np.vectorize(tau_first_12_mod)(gamma, omega, 1), 
+		start_12, 15, n=45)[0]
+    K_32 = fixed_quad(lambda gamma: np.vectorize(tau_first_32_mod)(gamma, omega, 1), 
+		start_32, 15, n=45)[0]
+    print start_12, start_32
     ans = (K_12 * K_12_prefactor(omega) * np.cos(theta) 
            + K_32 * K_32_prefactor(omega) * np.sin(theta)) * omega / c
     return ans
 
 
-omega = 10. * omega_c
+omega = 1. * omega_c
 time_before = time.time()
 print alpha_V_new(omega)
 time_after  = time.time()
