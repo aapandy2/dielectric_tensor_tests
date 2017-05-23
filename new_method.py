@@ -263,9 +263,9 @@ def tau_first_32_mod(gamma, omega, factor):
 
 def alpha_V_new(omega):
     K_12 = quad(lambda gamma: np.vectorize(tau_first_12_mod)(gamma, omega, 1), 
-		start_search_12(omega), 30.)[0]
+		start_search_12(omega), np.inf)[0]
     K_32 = quad(lambda gamma: np.vectorize(tau_first_32_mod)(gamma, omega, 1), 
-		start_search_32(omega), 30.)[0]
+		start_search_32(omega), np.inf)[0]
     print start_search_12(omega), start_search_32(omega)
     ans = (K_12 * K_12_prefactor(omega) * np.cos(theta) 
            + K_32 * K_32_prefactor(omega) * np.sin(theta)) * omega / c
