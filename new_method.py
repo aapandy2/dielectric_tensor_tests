@@ -119,29 +119,29 @@ def K_32_zero(omega):
     ans = 2. * np.pi * omega / omega_c
     return ans
 
-def tau_first_12(gamma, omega):
-    #hardcode only to second zero
-    ans   = 0.
-    step  = 30.
-    start = 0.
-    end   = K_12_zero(omega) * 2. #specific to K_12
-    while(end - start > step):
-        ans   += quad(lambda tau: K_12_xi_integrateda(gamma, tau, omega).real, start, start + step, epsabs=0.)[0]
-        start += step
-    ans += quad(lambda tau: K_12_xi_integrateda(gamma, tau, omega).real, start, end, epsabs=0.)[0]
-    return ans
-
-def tau_first_32(gamma, omega):
-    #hardcode only to first zero
-    ans   = 0.
-    step  = 30.
-    start = 0.
-    end   = K_32_zero(omega) * 1. #specific to K_32
-    while(end - start > step):
-        ans   += quad(lambda tau: K_32_xi_integrateda(gamma, tau, omega).real, start, start + step, epsabs=0.)[0]
-        start += step
-    ans += quad(lambda tau: K_32_xi_integrateda(gamma, tau, omega).real, start, end, epsabs=0.)[0]
-    return ans
+#def tau_first_12(gamma, omega):
+#    #hardcode only to second zero
+#    ans   = 0.
+#    step  = 30.
+#    start = 0.
+#    end   = K_12_zero(omega) * 2. #specific to K_12
+#    while(end - start > step):
+#        ans   += quad(lambda tau: K_12_xi_integrateda(gamma, tau, omega).real, start, start + step, epsabs=0.)[0]
+#        start += step
+#    ans += quad(lambda tau: K_12_xi_integrateda(gamma, tau, omega).real, start, end, epsabs=0.)[0]
+#    return ans
+#
+#def tau_first_32(gamma, omega):
+#    #hardcode only to first zero
+#    ans   = 0.
+#    step  = 30.
+#    start = 0.
+#    end   = K_32_zero(omega) * 1. #specific to K_32
+#    while(end - start > step):
+#        ans   += quad(lambda tau: K_32_xi_integrateda(gamma, tau, omega).real, start, start + step, epsabs=0.)[0]
+#        start += step
+#    ans += quad(lambda tau: K_32_xi_integrateda(gamma, tau, omega).real, start, end, epsabs=0.)[0]
+#    return ans
 
 def K_12_xi_integrated_real(gamma, tau_prime, omega):    
     prefactor  = 1.
@@ -172,12 +172,72 @@ def K_32_xi_integrated_real(gamma, tau_prime, omega):
     
     return ans * gamma**2. * beta
 
-def tau_first_12_mod(gamma, omega):
+#def tau_first_12_mod(gamma, omega):
+#    #hardcode only to second zero
+#    ans   = 0.
+#    step  = 60.
+#    start = 0.
+#    end   = K_12_zero(omega) * 2. #specific to K_12, should be 2. *
+#    while(end - start > step):
+#        ans   += quad(lambda tau: K_12_xi_integrated_real(gamma, tau, omega).real, 
+#                      start, start + step, weight='sin', wvar=gamma, epsabs=0.)[0]
+#        start += step
+#    ans += quad(lambda tau: K_12_xi_integrated_real(gamma, tau, omega) * np.sin(gamma * tau), 
+#                start, end, epsabs=0.)[0]
+#    return ans
+#
+#def tau_first_32_mod(gamma, omega):
+#    #hardcode only to first zero
+#    ans   = 0.
+#    step  = 60.
+#    start = 0.
+#    end   = K_32_zero(omega) * 1. #specific to K_32, should be 1. *
+#    while(end - start > step):
+#        ans   += quad(lambda tau: K_32_xi_integrated_real(gamma, tau, omega).real, 
+#                      start, start + step, weight='sin', wvar=gamma, epsabs=0.)[0]
+#        start += step
+#    ans += quad(lambda tau: K_32_xi_integrated_real(gamma, tau, omega) * np.sin(gamma * tau), 
+#                start, end, epsabs=0.)[0]
+#    return ans
+
+def start_search_12(omega):
+    tolerance = 0.1
+    step      = 0.1
+    gamma     = 1.
+    diff      = tolerance + 10.
+#    print 'GOT HERE'
+    while(diff > tolerance):
+        fac1 = tau_first_12_mod(gamma, omega, 1)
+        fac2 = tau_first_12_mod(gamma, omega, 2)
+        if(fac1 != 0 and fac2 != 0):
+            diff = np.abs((fac2 - fac1)/fac2)
+#        print gamma, fac1, fac2, diff
+        gamma += step
+        
+    return gamma - step
+
+def start_search_32(omega):
+    tolerance = 0.1
+    step      = 0.1
+    gamma     = 1.
+    diff      = tolerance + 10.
+#    print 'GOT HERE'
+    while(diff > tolerance):
+        fac1 = tau_first_32_mod(gamma, omega, 1)
+        fac2 = tau_first_32_mod(gamma, omega, 2)
+        if(fac1 != 0 and fac2 != 0):
+            diff = np.abs((fac2 - fac1)/fac2)
+#        print gamma, fac1, fac2, diff
+        gamma += step
+        
+    return gamma - step
+
+def tau_first_12_mod(gamma, omega, factor):
     #hardcode only to second zero
     ans   = 0.
-    step  = 60.
+    step  = 30.
     start = 0.
-    end   = K_12_zero(omega) * 2. #specific to K_12, should be 2. *
+    end   = K_12_zero(omega) * 2. * factor #specific to K_12, should be 2. *
     while(end - start > step):
         ans   += quad(lambda tau: K_12_xi_integrated_real(gamma, tau, omega).real, 
                       start, start + step, weight='sin', wvar=gamma, epsabs=0.)[0]
@@ -186,12 +246,12 @@ def tau_first_12_mod(gamma, omega):
                 start, end, epsabs=0.)[0]
     return ans
 
-def tau_first_32_mod(gamma, omega):
+def tau_first_32_mod(gamma, omega, factor):
     #hardcode only to first zero
     ans   = 0.
-    step  = 60.
+    step  = 30.
     start = 0.
-    end   = K_32_zero(omega) * 1. #specific to K_32, should be 1. *
+    end   = K_32_zero(omega) * 1. * factor #specific to K_32, should be 1. *
     while(end - start > step):
         ans   += quad(lambda tau: K_32_xi_integrated_real(gamma, tau, omega).real, 
                       start, start + step, weight='sin', wvar=gamma, epsabs=0.)[0]
@@ -202,8 +262,11 @@ def tau_first_32_mod(gamma, omega):
 
 
 def alpha_V_new(omega):
-    K_12 = fixed_quad(lambda gamma: np.vectorize(tau_first_12_mod)(gamma, omega), 1., 20., n=45)[0]
-    K_32 = fixed_quad(lambda gamma: np.vectorize(tau_first_32_mod)(gamma, omega), 1., 20., n=45)[0]
+    K_12 = quad(lambda gamma: np.vectorize(tau_first_12_mod)(gamma, omega, 1), 
+		start_search_12(omega), 30.)[0]
+    K_32 = quad(lambda gamma: np.vectorize(tau_first_32_mod)(gamma, omega, 1), 
+		start_search_32(omega), 30.)[0]
+    print start_search_12(omega), start_search_32(omega)
     ans = (K_12 * K_12_prefactor(omega) * np.cos(theta) 
            + K_32 * K_32_prefactor(omega) * np.sin(theta)) * omega / c
     return ans
