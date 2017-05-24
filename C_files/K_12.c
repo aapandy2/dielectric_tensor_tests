@@ -133,7 +133,6 @@ double start_search_12(struct params * params)
 		if(fac1 != 0. && fac2 != 0.)
 		{
 			diff = fabs((fac2 - fac1)/fac2);
-//			printf("%e	%e	%e\n", fac1, fac2, diff);
 		}
 		gamma += step;
 	}
@@ -144,14 +143,27 @@ double start_search_12(struct params * params)
 
 double K_12(struct params * p)
 {
+	double prefactor = - 1. * p->omega_p*p->omega_p / (p->omega * p->omega)
+                           * 1./(4. * p->theta_e*p->theta_e * gsl_sf_bessel_Kn(2, 1./p->theta_e));
+	
 	gsl_function F;
         F.function = &tau_integrator_12;
         F.params   = p;
+	gsl_integration_workspace * w = gsl_integration_workspace_alloc(5000);
+
+
+	double start = start_search_12(p);
+	double end   = 15.;
 
 	double ans   = 0.;
 	double error = 0.;
-	size_t neval = 200;
+	size_t limit = 50;
+
+	
 	gsl_set_error_handler_off();
-	gsl_integration_qng(&F, 1., 15., 0., 1e-8, &ans, &error, &neval);
+	gsl_integration_qagiu(&F, start, 0., 1e-8, limit, w, &ans, &error);
+	gsl_integration_workspace_free(w);
+
+//	return prefactor * ans;
 	return ans;
 }
