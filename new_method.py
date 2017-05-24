@@ -209,9 +209,10 @@ def start_search_12(omega):
     while(diff > tolerance):
         fac1 = tau_first_12_mod(gamma, omega, 1)
         fac2 = tau_first_12_mod(gamma, omega, 2)
+#	print gamma, omega/omega_c, fac1, fac2
         if(fac1 != 0 and fac2 != 0):
             diff = np.abs((fac2 - fac1)/fac2)
-#        print gamma, fac1, fac2, diff
+        print gamma, fac1, fac2, diff
         gamma += step
         
     return gamma - step
@@ -281,8 +282,10 @@ def alpha_V_new(omega):
     return ans
 
 
-omega = 1. * omega_c
-time_before = time.time()
-print alpha_V_new(omega)
-time_after  = time.time()
-print 'time elapsed:', time_after - time_before
+omega = 30. * omega_c
+print start_search_12(omega)
+
+#time_before = time.time()
+#print alpha_V_new(omega)
+#time_after  = time.time()
+#print 'time elapsed:', time_after - time_before
