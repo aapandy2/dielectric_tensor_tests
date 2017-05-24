@@ -73,7 +73,8 @@ double tau_integrator_32(double gamma, void * parameters)
 {
 	struct params * params = (struct params*) parameters;
 
-	if(params->omega/params->omega_c < 10.)
+	/* does this only work for low theta_e? */
+	if(params->omega/params->omega_c < 10. && params->theta_e < 1.)
 	{
 		params->resolution_factor = 8;
 	}
@@ -82,11 +83,11 @@ double tau_integrator_32(double gamma, void * parameters)
         double ans_tot  = 0.;
 	double ans_step = 0.;
 	double error    = 0.;
-        double step     = 30.;
+        double step     = 5.;
         double start    = 0.;
         double end      = M_PI * params->omega / params->omega_c * 2. * params->resolution_factor;
 	size_t n        = 50;
-	size_t limit    = 50;
+	size_t limit    = 5000;
 	double epsabs   = 0.;
 	double epsrel   = 1e-8;
 
@@ -111,7 +112,7 @@ double tau_integrator_32(double gamma, void * parameters)
         }
 
 	gsl_integration_qawo_table_set_length(table, end - start);
-        gsl_integration_qawo(&F, start, epsabs, epsrel, limit, w, table, &ans_step, &error); //INTEGRATE END STEP
+        gsl_integration_qawo(&F, start, epsabs, epsrel, limit, w, table, &ans_step, &error);
 	ans_tot += ans_step; 
 
 	gsl_integration_qawo_table_free(table);
@@ -161,17 +162,21 @@ double K_32(struct params * p)
 	gsl_function F;
         F.function = &tau_integrator_32;
         F.params   = p;
-	gsl_integration_workspace * w = gsl_integration_workspace_alloc(5000);
+//	gsl_integration_workspace * w = gsl_integration_workspace_alloc(5000);
 
-	double start = start_search_32(p);
-	double ans   = 0.;
-	double error = 0.;
-	size_t limit = 50;
+	double start  = start_search_32(p);
+	double end    = 150.;
+	double ans    = 0.;
+	double error  = 0.;
+	size_t limit  = 5000;
+	double epsabs = 0.;
+        double epsrel = 1e-8;
 
-	
+        gsl_integration_qng(&F, start, end, epsabs, epsrel, &ans, &error, &limit);
+
 	gsl_set_error_handler_off();
-	gsl_integration_qagiu(&F, start, 0., 1e-8, limit, w, &ans, &error);
-	gsl_integration_workspace_free(w);
+//	gsl_integration_qagiu(&F, start, 0., 1e-8, limit, w, &ans, &error);
+//	gsl_integration_workspace_free(w);
 
 	return prefactor * ans;
 //	return ans;

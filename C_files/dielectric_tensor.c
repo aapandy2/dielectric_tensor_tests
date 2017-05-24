@@ -13,7 +13,7 @@ int set_params(struct params *p)
 	//parameters
 	p->B       = 1.;          //background B strength
 	p->n_e     = 1.;          //electron number density cm^-3
-	p->theta_e = 0.5;         //dimensionless electron temp
+	p->theta_e = 10.;         //dimensionless electron temp
 	p->theta   = M_PI/3.;     //observer angle
 
 	//derived quantities
@@ -39,7 +39,18 @@ int main(void)
 {
         struct params p;
 	set_params(&p);
-	p.omega = 200. * p.omega_c;	
+	p.omega = 10. * p.omega_c;
+//	double i = 1.;
+//	while(i < 100)
+//	{
+//		printf("\n%e	%e", i, tau_integrator_32(i, &p));
+//		i = i + 0.1;
+//	}
+//	printf("\n");
+
+//	printf("\n%e\n", tau_integrator_12(10., &p));
+//	printf("\n%e\n", tau_integrator_12(11., &p));
+//	printf("\n%e	%e\n", 	start_search_12(&p), start_search_32(&p));	
 	printf("\n%e	%e\n", p.omega/p.omega_c, alpha_V(&p));
 
 }

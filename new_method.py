@@ -19,7 +19,7 @@ epsilon  = -1.    #sign of electron charge
 #parameters
 B       = 1.         #background B strength
 n_e     = 1.         #electron number density cm^-3
-theta_e = 0.5         #dimensionless electron temp
+theta_e = 10.         #dimensionless electron temp
 theta   = np.pi/3.    #observer angle
 
 #derived quantities
@@ -285,13 +285,13 @@ def alpha_V_new(omega):
 
 
 omega = 1. * omega_c
-print quad(lambda gamma: tau_first_12_mod(gamma, omega, 1), 1., 15.)
-print quad(lambda gamma: tau_first_32_mod(gamma, omega, 1), 1., 15.)
+#print quad(lambda gamma: tau_first_12_mod(gamma, omega, 1), 1., 15.)
+#print quad(lambda gamma: tau_first_32_mod(gamma, omega, 1), 1., 15.)
 
-#gamma = np.linspace(1., 10., 100)
-#pl.plot(gamma, np.vectorize(tau_first_12_mod)(gamma, omega, 1))
-#pl.plot(gamma, np.vectorize(tau_first_12_mod)(gamma, omega, 2))
-#pl.show()
+gamma = np.linspace(120., 125., 200)
+pl.plot(gamma, np.vectorize(tau_first_12_mod)(gamma, omega, 1))
+#pl.plot(gamma, np.vectorize(tau_first_12_mod)(gamma, omega, 8))
+pl.show()
 #time_before = time.time()
 #print alpha_V_new(omega)
 #time_after  = time.time()
