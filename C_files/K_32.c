@@ -121,6 +121,12 @@ double start_search_32(struct params * params)
 	double gamma     = 1.0;
 	double diff      = tolerance + 10.;
 
+	/* describe this later */
+	if(params->omega/params->omega_c < 10.)
+	{
+		return 1.;
+	}
+
 	double fac1 = 0.;
 	double fac2 = 0.;
 	while(diff > tolerance)
@@ -151,10 +157,7 @@ double K_32(struct params * p)
         F.params   = p;
 	gsl_integration_workspace * w = gsl_integration_workspace_alloc(5000);
 
-
 	double start = start_search_32(p);
-	double end   = 15.;
-
 	double ans   = 0.;
 	double error = 0.;
 	size_t limit = 50;

@@ -1,7 +1,7 @@
 import numpy as np
 
-import matplotlib #prevent SSH from killing plots
-matplotlib.use('Agg')
+#import matplotlib #prevent SSH from killing plots
+#matplotlib.use('Agg')
 
 import pylab as pl
 import time
@@ -71,11 +71,13 @@ def I_1_analytic(alpha, delta):
     return ans
 
 def I_2_analytic(alpha, delta):
-    if(alpha == 0 or delta == 0):
-        return 0.
     A     = np.sqrt(alpha**2. + delta**2.)
     plus  = np.sqrt(A + alpha)
     minus = np.sqrt(A - alpha)
+    
+    if(alpha == 0. or delta == 0. or minus == 0.):
+	return 0.
+
     num   = alpha * delta**8. * (3. * A * np.cos(A) + (-3. + alpha**2. + delta**2.) * np.sin(A))
     denom = A**5. * minus**7. * plus**7.
     delta_correction = delta / np.abs(delta)
@@ -228,7 +230,7 @@ def start_search_32(omega):
         fac2 = tau_first_32_mod(gamma, omega, 2)
         if(fac1 != 0 and fac2 != 0):
             diff = np.abs((fac2 - fac1)/fac2)
-#        print gamma, fac1, fac2, diff
+        print gamma, diff
         gamma += step
         
     return gamma - step
@@ -282,9 +284,14 @@ def alpha_V_new(omega):
     return ans
 
 
-omega = 30. * omega_c
-print start_search_12(omega)
+omega = 1. * omega_c
+print quad(lambda gamma: tau_first_12_mod(gamma, omega, 1), 1., 15.)
+print quad(lambda gamma: tau_first_32_mod(gamma, omega, 1), 1., 15.)
 
+#gamma = np.linspace(1., 10., 100)
+#pl.plot(gamma, np.vectorize(tau_first_12_mod)(gamma, omega, 1))
+#pl.plot(gamma, np.vectorize(tau_first_12_mod)(gamma, omega, 2))
+#pl.show()
 #time_before = time.time()
 #print alpha_V_new(omega)
 #time_after  = time.time()

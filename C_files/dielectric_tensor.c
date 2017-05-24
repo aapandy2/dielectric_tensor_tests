@@ -32,8 +32,8 @@ int main(void)
         struct params p;
 	set_params(&p);
 	p.omega = 1. * p.omega_c;	
-	p.gamma = 1.5;
-        printf("\n%e\n", tau_integrator_32(1.5, &p));
+        printf("\n%e\n", K_12(&p));
+        printf("\n%e\n", K_32(&p));
 
 }
 
