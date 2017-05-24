@@ -84,6 +84,9 @@ double tau_integrator_12(double gamma, void * parameters)
         double start    = 0.;
         double end      = M_PI * params->omega / params->omega_c * 2. * params->resolution_factor;
 	size_t n        = 50;
+	size_t limit    = 50;
+	double epsabs   = 0.;
+	double epsrel   = 1e-8;
 
 	//need to update value of gamma
 	params-> gamma = gamma;
@@ -100,13 +103,13 @@ double tau_integrator_12(double gamma, void * parameters)
 
         while(end - start >= step)
         {
-                gsl_integration_qawo(&F, start, 0., 1e-8, 50, w, table, &ans_step, &error);
+                gsl_integration_qawo(&F, start, epsabs, epsrel, limit, w, table, &ans_step, &error);
 		ans_tot += ans_step;
                 start   += step;
         }
 
 	gsl_integration_qawo_table_set_length(table, end - start);
-        gsl_integration_qawo(&F, start, 0., 1e-8, 50, w, table, &ans_step, &error); //INTEGRATE END STEP HERE
+        gsl_integration_qawo(&F, start, epsabs, epsrel, limit, w, table, &ans_step, &error); //INTEGRATE END STEP HERE
 	ans_tot += ans_step; 
 
 	gsl_integration_qawo_table_free(table);

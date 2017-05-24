@@ -33,7 +33,7 @@ int main(void)
 	set_params(&p);
 	p.omega = 1. * p.omega_c;	
 	p.gamma = 1.5;
-        printf("\n%e\n", K_32_integrand_imag(1., &p));
+        printf("\n%e\n", tau_integrator_32(1.5, &p));
 
 }
 

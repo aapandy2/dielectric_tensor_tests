@@ -18,4 +18,5 @@ struct params
 
 double K_12(struct params * p);
 double K_32(struct params * p);
-double K_32_integrand_imag(double tau_prime, void * parameters);
+double tau_integrator_12(double gamme, void * p);
+double tau_integrator_32(double gamma, void * p);

@@ -7,14 +7,15 @@
 
 double I_2_analytic(double alpha, double delta)
 {
-	if(alpha == 0. || delta == 0.)
-	{
-		return 0.;
-	}
-
 	double A     = sqrt(alpha*alpha + delta*delta);
 	double plus  = sqrt(A + alpha);
 	double minus = sqrt(A - alpha);
+
+	if(alpha == 0. || delta == 0. || minus == 0.)
+        {
+                return 0.;
+        }
+
 	double num   = alpha * pow(delta, 8.) * (3. * A * cos(A) + (-3. + alpha*alpha + delta*delta) * sin(A));
 	double denom = pow(A, 5.) * pow(minus, 7.) * pow(plus, 7.);
 	double delta_correction = delta / fabs(delta);
@@ -35,12 +36,12 @@ double K_32_integrand_real(double tau_prime, void * parameters)
 
 	double gamma_term = beta*beta * params->gamma * exp(-params->gamma/params->theta_e);
 //	double tau_term   = exp(1j * tau_prime * gamma) * sin((epsilon * omega_c / omega) * tau_prime);
-	double tau_term   = sin(tau_prime * params->gamma) 
-			    * sin((params->epsilon * params->omega_c / params->omega) * tau_prime / 2.);
-//	double tau_term   = sin((params->epsilon * params->omega_c / params->omega) * tau_prime / 2.);
+//	double tau_term   = sin(tau_prime * params->gamma) 
+//			    * sin((params->epsilon * params->omega_c / params->omega) * tau_prime / 2.);
+	double tau_term   = sin((params->epsilon * params->omega_c / params->omega) * tau_prime / 2.);
 	double xi_term    = 2. * I_2_analytic(alpha, delta); //should be -2j *
 	double ans        = prefactor * gamma_term * xi_term * tau_term * params->gamma*params->gamma * beta;
-	
+
 	return ans;
 }
 
@@ -79,6 +80,9 @@ double tau_integrator_32(double gamma, void * parameters)
         double start    = 0.;
         double end      = M_PI * params->omega / params->omega_c * 2. * params->resolution_factor;
 	size_t n        = 50;
+	size_t limit    = 50;
+	double epsabs   = 0.;
+	double epsrel   = 1e-8;
 
 	//need to update value of gamma
 	params-> gamma = gamma;
@@ -95,13 +99,13 @@ double tau_integrator_32(double gamma, void * parameters)
 
         while(end - start >= step)
         {
-                gsl_integration_qawo(&F, start, 0., 1e-8, 50, w, table, &ans_step, &error);
+	        gsl_integration_qawo(&F, start, epsabs, epsrel, limit, w, table, &ans_step, &error);
 		ans_tot += ans_step;
                 start   += step;
         }
 
 	gsl_integration_qawo_table_set_length(table, end - start);
-        gsl_integration_qawo(&F, start, 0., 1e-8, 50, w, table, &ans_step, &error); //INTEGRATE END STEP HERE
+        gsl_integration_qawo(&F, start, epsabs, epsrel, limit, w, table, &ans_step, &error); //INTEGRATE END STEP
 	ans_tot += ans_step; 
 
 	gsl_integration_qawo_table_free(table);
