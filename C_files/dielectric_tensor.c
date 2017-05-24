@@ -31,12 +31,12 @@ int main(void)
 {
         struct params p;
 	set_params(&p);
-	p.omega = 10. * p.omega_c;	
+	p.omega = 30. * p.omega_c;	
 
 //        double prefactor = - 1. * omega_p*omega_p / (omega * omega)
 //                            * 1./(4. * theta_e*theta_e * gsl_sf_bessel_Kn(2, 1./theta_e));
 
-        printf("\n%e\n", K_12(&p));
+        printf("\n%e\n", start_search_12(&p));
 
 }
 

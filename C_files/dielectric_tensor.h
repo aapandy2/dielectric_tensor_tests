@@ -17,3 +17,4 @@ struct params
 };
 
 double K_12(struct params * p);
+double start_search_12(struct params * p);

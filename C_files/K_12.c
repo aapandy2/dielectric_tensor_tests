@@ -133,7 +133,7 @@ double start_search_12(struct params * params)
 		if(fac1 != 0. && fac2 != 0.)
 		{
 			diff = fabs((fac2 - fac1)/fac2);
-			printf("%e	%e	%e\n", fac1, fac2, diff);
+//			printf("%e	%e	%e\n", fac1, fac2, diff);
 		}
 		gamma += step;
 	}
