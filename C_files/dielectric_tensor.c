@@ -31,9 +31,9 @@ int main(void)
 {
         struct params p;
 	set_params(&p);
-	p.omega = 100. * p.omega_c;	
-
-        printf("\n%e\n", K_12(&p));
+	p.omega = 1. * p.omega_c;	
+	p.gamma = 1.5;
+        printf("\n%e\n", K_32_integrand_imag(1., &p));
 
 }
 
