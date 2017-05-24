@@ -77,6 +77,12 @@ double tau_integrator_12(double gamma, void * parameters)
 {
 	struct params * params = (struct params*) parameters;
 
+	if(params->omega/params->omega_c < 10.)
+	{
+		params->resolution_factor = 8;
+	}
+
+
         double ans_tot  = 0.;
 	double ans_step = 0.;
 	double error    = 0.;
@@ -172,6 +178,6 @@ double K_12(struct params * p)
 	gsl_integration_qagiu(&F, start, 0., 1e-8, limit, w, &ans, &error);
 	gsl_integration_workspace_free(w);
 
-//	return prefactor * ans;
-	return ans;
+	return prefactor * ans;
+//	return ans;
 }

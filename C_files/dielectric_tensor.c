@@ -27,13 +27,20 @@ int set_params(struct params *p)
 	return 1;
 }
 
+double alpha_V(struct params *p)
+{
+	double prefactor = 4. * M_PI * p->epsilon0 * p->omega / p->c;
+	double term1     = (K_12(p) * cos(p->theta) + K_32(p) * sin(p->theta));
+	double ans       = prefactor * term1;
+	return ans;
+}
+
 int main(void)
 {
         struct params p;
 	set_params(&p);
-	p.omega = 1. * p.omega_c;	
-        printf("\n%e\n", K_12(&p));
-        printf("\n%e\n", K_32(&p));
+	p.omega = 200. * p.omega_c;	
+	printf("\n%e	%e\n", p.omega/p.omega_c, alpha_V(&p));
 
 }
 
