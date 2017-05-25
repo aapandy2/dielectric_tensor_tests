@@ -39,7 +39,7 @@ int main(void)
 {
         struct params p;
 	set_params(&p);
-	p.omega = 10. * p.omega_c;
+	p.omega = 100. * p.omega_c;
 //	double i = 1.;
 //	while(i < 100)
 //	{

@@ -168,7 +168,7 @@ double K_32(struct params * p)
 	double end    = 150.;
 	double ans    = 0.;
 	double error  = 0.;
-	size_t limit  = 5000;
+	size_t limit  = 50;
 	double epsabs = 0.;
         double epsrel = 1e-8;
 
