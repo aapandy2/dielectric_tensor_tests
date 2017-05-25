@@ -23,6 +23,7 @@ int set_params(struct params *p)
 	//integrator parameters
 	p->gamma             = 1.; //will get reset later in integration
 	p->resolution_factor = 1;
+	p->real              = 1;
 
 	return 1;
 }
@@ -39,12 +40,12 @@ int main(void)
 {
         struct params p;
 	set_params(&p);
-	p.omega = 100. * p.omega_c;
+	p.omega = 10. * p.omega_c;
 //	double i = 1.;
-//	while(i < 100)
+//	while(i < 150)
 //	{
-//		printf("\n%e	%e", i, tau_integrator_32(i, &p));
-//		i = i + 0.1;
+//		printf("\n%e	%e", i, tau_integrator_12(i, &p));
+//		i = i + 1;
 //	}
 //	printf("\n");
 

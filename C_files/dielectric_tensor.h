@@ -14,6 +14,7 @@ struct params
         double omega;
         double gamma;
         int resolution_factor;
+	int real;
 };
 
 double K_12(struct params * p);
