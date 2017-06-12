@@ -7,13 +7,13 @@ int set_params(struct params *p)
 	p->epsilon0  = 1./(4. * M_PI);
 	p->e         = 4.80320680e-10;
 	p->m         = 9.1093826e-28;
-	p->c        = 2.99792458e10;
-	p->epsilon  = -1.;        //sign of electron charge
+	p->c         = 2.99792458e10;
+	p->epsilon   = -1.;        //sign of electron charge
 	
 	//parameters
 	p->B       = 1.;          //background B strength
 	p->n_e     = 1.;          //electron number density cm^-3
-	p->theta_e = 10.;         //dimensionless electron temp
+	p->theta_e = 0.5;         //dimensionless electron temp
 	p->theta   = M_PI/3.;     //observer angle
 
 	//derived quantities
@@ -30,6 +30,7 @@ int set_params(struct params *p)
 
 double alpha_V(struct params *p)
 {
+	p->real          = 1;
 	double prefactor = 4. * M_PI * p->epsilon0 * p->omega / p->c;
 	double term1     = (K_12(p) * cos(p->theta) + K_32(p) * sin(p->theta));
 	double ans       = prefactor * term1;
@@ -40,7 +41,8 @@ int main(void)
 {
         struct params p;
 	set_params(&p);
-	p.omega = 10. * p.omega_c;
+	p.omega = 1. * p.omega_c;
+	p.gamma = 1.5;
 //	double i = 1.;
 //	while(i < 150)
 //	{
@@ -50,9 +52,9 @@ int main(void)
 //	printf("\n");
 
 //	printf("\n%e\n", tau_integrator_12(10., &p));
-//	printf("\n%e\n", tau_integrator_12(11., &p));
+	printf("\n%e\n", K_13_integrand(1.5, &p));
 //	printf("\n%e	%e\n", 	start_search_12(&p), start_search_32(&p));	
-	printf("\n%e	%e\n", p.omega/p.omega_c, alpha_V(&p));
+//	printf("\n%e	%e\n", p.omega/p.omega_c, alpha_V(&p));
 
 }
 

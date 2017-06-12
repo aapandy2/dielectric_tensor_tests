@@ -16,14 +16,13 @@ double I_2_analytic(double alpha, double delta)
                 return 0.;
         }
 
-	double num   = alpha * pow(delta, 8.) * (3. * A * cos(A) + (-3. + alpha*alpha + delta*delta) * sin(A));
-	double denom = pow(A, 5.) * pow(minus, 7.) * pow(plus, 7.);
-	double delta_correction = delta / fabs(delta);
-	double ans   = -num / denom * delta_correction;
+	double num   = 2. * alpha * delta * (3. * A * cos(A) + (-3. + alpha*alpha + delta*delta) * sin(A));
+	double denom = pow(A, 5.);
+	double ans   = -num / denom;
 	return ans;
 }
 
-double K_32_integrand_real(double tau_prime, void * parameters)
+double K_32_integrand(double tau_prime, void * parameters)
 {
 	struct params * params = (struct params*) parameters;
 
@@ -34,12 +33,12 @@ double K_32_integrand_real(double tau_prime, void * parameters)
 			   * sin(params->theta) * params->gamma * beta 
 			   * sin((params->epsilon * params->omega_c / params->omega) * tau_prime / (2.));
 
-	double gamma_term = beta*beta * params->gamma * exp(-params->gamma/params->theta_e);
+	double gamma_term = beta*beta * params->gamma * MJ(params);//* exp(-params->gamma/params->theta_e);
 //	double tau_term   = exp(1j * tau_prime * gamma) * sin((epsilon * omega_c / omega) * tau_prime);
 //	double tau_term   = sin(tau_prime * params->gamma) 
 //			    * sin((params->epsilon * params->omega_c / params->omega) * tau_prime / 2.);
 	double tau_term   = sin((params->epsilon * params->omega_c / params->omega) * tau_prime / 2.);
-	double xi_term    = 2. * I_2_analytic(alpha, delta); //should be -2j *
+	double xi_term    = I_2_analytic(alpha, delta);
 	double ans        = prefactor * gamma_term * xi_term * tau_term * params->gamma*params->gamma * beta;
 
 	return ans;
@@ -91,7 +90,7 @@ double tau_integrator_32(double gamma, void * parameters)
 	gsl_integration_workspace * w = gsl_integration_workspace_alloc (5000);
 	gsl_set_error_handler_off();
 	gsl_function F;
-	F.function = &K_32_integrand_real;
+	F.function = &K_32_integrand;
 	F.params   = params;
 
         while(end - start >= step)
@@ -146,27 +145,29 @@ double start_search_32(struct params * params)
 double K_32(struct params * p)
 {
 
-	double prefactor = p->omega_p*p->omega_p / (p->omega * p->omega) 
-			   * 1./(2. * p->theta_e*p->theta_e * gsl_sf_bessel_Kn(2, 1./p->theta_e));
+//	double prefactor = p->omega_p*p->omega_p / (p->omega * p->omega) 
+//			   * 1./(2. * p->theta_e*p->theta_e * gsl_sf_bessel_Kn(2, 1./p->theta_e));
+
+	double prefactor = 2. * M_PI * p->omega_p*p->omega_p / (p->omega * p->omega);
 	
 	gsl_function F;
         F.function = &tau_integrator_32;
         F.params   = p;
-//	gsl_integration_workspace * w = gsl_integration_workspace_alloc(5000);
+	gsl_integration_workspace * w = gsl_integration_workspace_alloc(5000);
 
 	double start  = start_search_32(p);
-	double end    = 150.;
+//	double end    = 150.;
 	double ans    = 0.;
 	double error  = 0.;
 	size_t limit  = 50;
 	double epsabs = 0.;
         double epsrel = 1e-8;
 
-        gsl_integration_qng(&F, start, end, epsabs, epsrel, &ans, &error, &limit);
+//        gsl_integration_qng(&F, start, end, epsabs, epsrel, &ans, &error, &limit);
 
 	gsl_set_error_handler_off();
-//	gsl_integration_qagiu(&F, start, 0., 1e-8, limit, w, &ans, &error);
-//	gsl_integration_workspace_free(w);
+	gsl_integration_qagiu(&F, start, 0., 1e-8, limit, w, &ans, &error);
+	gsl_integration_workspace_free(w);
 
 	return prefactor * ans;
 //	return ans;
