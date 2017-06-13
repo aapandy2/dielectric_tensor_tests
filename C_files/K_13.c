@@ -36,6 +36,11 @@ double tau_integrator_13(double gamma, void * parameters)
 {
 	struct params * params = (struct params*) parameters;
 
+	if(gamma == 1.)
+	{
+		return 0.;
+	}
+
 	/* does this only work for low theta_e? */
 //	if(params->omega/params->omega_c < 10. && params->theta_e < 1.)
 //	{

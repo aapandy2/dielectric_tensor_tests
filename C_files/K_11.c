@@ -5,32 +5,14 @@
 #include <gsl/gsl_errno.h>
 #include "dielectric_tensor.h"
 
-double I_1_analytic(double alpha, double delta)
+double I_1_of_2(double alpha, double delta)
 {
-	double A     = sqrt(alpha*alpha + delta*delta);
-	double minus = sqrt(A - alpha);
-	double plus  = sqrt(A + alpha);
-
-	if(alpha == 0. || delta == 0. || minus == 0.)
-	{
-		return 0.;
-	}
-
-	double ans = 2. * ( (2. * alpha*alpha + (alpha*alpha - 1.)*delta*delta + pow(delta, 4.))*sin(A) 
-                - (2. * alpha*alpha - delta*delta) * A * cos(A)) / pow(A, 5.);
-    	return ans;
-
-}
-
-double MJ(struct params * params)
-{
-	double ans = exp(-params->gamma/params->theta_e) 
-		   / (4. * M_PI * params->theta_e*params->theta_e 
-	  	      * gsl_sf_bessel_Kn(2, 1./params->theta_e));
+	double A   = sqrt(alpha*alpha + delta*delta);
+	double ans = -2. * delta*delta * (3. * A * cos(A) + (-3. + A*A) * sin(A)) / pow(A, 5.);
 	return ans;
 }
 
-double K_12_integrand(double tau_prime, void * parameters)
+double K_11_integrand(double tau_prime, void * parameters)
 {
 	struct params * params = (struct params*) parameters;
 
@@ -45,14 +27,14 @@ double K_12_integrand(double tau_prime, void * parameters)
 //	double tau_term   = exp(1j * tau_prime * gamma) * sin((epsilon * omega_c / omega) * tau_prime);
 //	double tau_term   = -sin(tau_prime * params->gamma) 
 //			    * sin((epsilon * params->omega_c / params->omega) * tau_prime);
-	double tau_term   = -sin((params->epsilon * params->omega_c / params->omega) * tau_prime);
-	double xi_term    = -0.5 * I_1_analytic(alpha, delta);
-	double ans        = prefactor * gamma_term * xi_term * tau_term * params->gamma*params->gamma * beta;
+	double tauxi_term = 0.5 * (cos((params->epsilon * params->omega_c / params->omega) * tau_prime) * I_1_analytic(alpha, delta)
+				   - I_1_of_2(alpha, delta));
+	double ans        = prefactor * gamma_term * tauxi_term * params->gamma*params->gamma * beta;
 	
 	return ans;
 }
 
-double tau_integrator_12(double gamma, void * parameters)
+double tau_integrator_11(double gamma, void * parameters)
 {
 	struct params * params = (struct params*) parameters;
 
@@ -63,10 +45,10 @@ double tau_integrator_12(double gamma, void * parameters)
 
 
 	/* does this only work for low theta_e? */
-	if(params->omega/params->omega_c < 10. && params-> theta_e < 1.)
-	{
-		params->resolution_factor = 8;
-	}
+//	if(params->omega/params->omega_c < 10. && params-> theta_e < 1.)
+//	{
+//		params->resolution_factor = 8;
+//	}
 
 
         double ans_tot  = 0.;
@@ -90,12 +72,12 @@ double tau_integrator_12(double gamma, void * parameters)
 	if(params->real == 1)
 	{
 		gsl_weight      = GSL_INTEG_SINE;
-		sign_correction = 1.;
+		sign_correction = -1.;
 	}
 	else
 	{
 		gsl_weight      = GSL_INTEG_COSINE;
-		sign_correction = -1.;
+		sign_correction = 1.;
 	}
 
 	gsl_integration_qawo_table * table = 
@@ -104,7 +86,7 @@ double tau_integrator_12(double gamma, void * parameters)
 	gsl_integration_workspace * w = gsl_integration_workspace_alloc (5000);
 	gsl_set_error_handler_off();
 	gsl_function F;
-	F.function = &K_12_integrand;
+	F.function = &K_11_integrand;
 	F.params   = params;
 
         while(end - start >= step)
@@ -124,7 +106,7 @@ double tau_integrator_12(double gamma, void * parameters)
 	return ans_tot * sign_correction;
 }
 
-double start_search_12(struct params * params)
+double start_search_11(struct params * params)
 {
 	double tolerance = 0.1;
 	double step      = 0.1;
@@ -143,9 +125,9 @@ double start_search_12(struct params * params)
 	while(diff > tolerance)
 	{
 		params->resolution_factor = 1;
-		fac1 = tau_integrator_12(gamma, params); //need to set res_factor to 1 here
+		fac1 = tau_integrator_11(gamma, params); //need to set res_factor to 1 here
 		params->resolution_factor = 2;
-		fac2 = tau_integrator_12(gamma, params); //need to set res_factor to 2 here
+		fac2 = tau_integrator_11(gamma, params); //need to set res_factor to 2 here
 		if(fac1 != 0. && fac2 != 0.)
 		{
 			diff = fabs((fac2 - fac1)/fac2);
@@ -157,7 +139,7 @@ double start_search_12(struct params * params)
 	return (gamma - step);
 }
 
-double K_12(struct params * p)
+double K_11(struct params * p)
 {
 //	double prefactor = 1. * p->omega_p*p->omega_p / (p->omega * p->omega)
 //                           * 1./(2. * p->theta_e*p->theta_e * gsl_sf_bessel_Kn(2, 1./p->theta_e));
@@ -165,13 +147,13 @@ double K_12(struct params * p)
 	double prefactor = 2. * M_PI * p->omega_p*p->omega_p / (p->omega * p->omega);
 	
 	gsl_function F;
-        F.function = &tau_integrator_12;
+        F.function = &tau_integrator_11;
         F.params   = p;
 	gsl_integration_workspace * w = gsl_integration_workspace_alloc(5000);
 
 
-	double start  = start_search_12(p);
-//	double end    = 150.; //figure out better way to do this
+	double start  = start_search_11(p);
+	double end    = 9.; //figure out better way to do this
 	double ans    = 0.;
 	double error  = 0.;
 	size_t limit  = 50;
@@ -186,6 +168,6 @@ double K_12(struct params * p)
 	gsl_integration_qagiu(&F, start, 0., 1e-8, limit, w, &ans, &error);
 	gsl_integration_workspace_free(w);
 
-	return prefactor * ans;
+	return 1. + prefactor * ans;
 //	return ans;
 }

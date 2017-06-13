@@ -21,7 +21,7 @@ int set_params(struct params *p)
         p->omega_c = p->e * p->B / (p->m * p->c);                        //cyclotron frequency
 
 	//integrator parameters
-	p->gamma             = 1.; //will get reset later in integration
+	p->gamma             = 1.5; //will get reset later in integration
 	p->resolution_factor = 1;
 	p->real              = 1;
 
@@ -43,16 +43,17 @@ int main(void)
 	set_params(&p);
 	p.omega = 1. * p.omega_c;
 	p.gamma = 1.5;
-//	double i = 1.;
-//	while(i < 150)
+	p.real  = 1;
+	double i = 1.;
+//	while(i < 10)
 //	{
-//		printf("\n%e	%e", i, tau_integrator_12(i, &p));
-//		i = i + 1;
+//		printf("\n%e	%e", i, tau_integrator_11(i, &p));
+//		i = i + 0.05;
 //	}
 //	printf("\n");
 
-//	printf("\n%e\n", start_search_13(&p));
-	printf("\n%e\n", K_31(&p));
+//	printf("\n%e\n", tau_integrator_11(1.5, &p));
+	printf("\n%e\n", K_11(&p));
 //	printf("\n%e	%e\n", 	start_search_12(&p), start_search_32(&p));	
 //	printf("\n%e	%e\n", p.omega/p.omega_c, alpha_V(&p));
 
