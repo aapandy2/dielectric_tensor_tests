@@ -53,7 +53,7 @@ int main(void)
 //	printf("\n");
 
 //	printf("\n%e\n", tau_integrator_11(1.5, &p));
-	printf("\n%e\n", K_11(&p));
+	printf("\n%e\n", K_22(&p));
 //	printf("\n%e	%e\n", 	start_search_12(&p), start_search_32(&p));	
 //	printf("\n%e	%e\n", p.omega/p.omega_c, alpha_V(&p));
 

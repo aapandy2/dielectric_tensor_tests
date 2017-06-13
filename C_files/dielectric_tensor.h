@@ -30,6 +30,7 @@ double start_search_13(struct params * params);
 double start_search_11(struct params * params);
 
 double K_11(struct params * p);
+double K_22(struct params * p);
 double K_12(struct params * p);
 double K_32(struct params * p);
 double K_13(struct params * p);
