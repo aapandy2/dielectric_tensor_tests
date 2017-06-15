@@ -43,17 +43,17 @@ int main(void)
 	set_params(&p);
 	p.omega = 1. * p.omega_c;
 	p.gamma = 1.5;
-	p.real  = 1;
+	p.real  = 0;
 	double i = 1.;
-//	while(i < 10)
-//	{
-//		printf("\n%e	%e", i, tau_integrator_11(i, &p));
-//		i = i + 0.05;
-//	}
-//	printf("\n");
+	while(i < 10)
+	{
+		printf("\n%e	%e", i, tau_integrator_33(i, &p));
+		i = i + 0.05;
+	}
+	printf("\n");
 
-//	printf("\n%e\n", tau_integrator_11(1.5, &p));
-	printf("\n%e\n", K_22(&p));
+//	printf("\n%e\n", tau_integrator_33(2.01, &p));
+//	printf("\n%e\n", K_22(&p));
 //	printf("\n%e	%e\n", 	start_search_12(&p), start_search_32(&p));	
 //	printf("\n%e	%e\n", p.omega/p.omega_c, alpha_V(&p));
 
