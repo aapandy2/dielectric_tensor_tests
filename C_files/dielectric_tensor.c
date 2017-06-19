@@ -40,6 +40,17 @@ double alpha_I(struct params *p)
         return ans;
 }
 
+double alpha_Q(struct params *p)
+{
+        p->real          = 0;
+        double prefactor = 2. * M_PI * p->epsilon0 * p->omega / p->c;
+        double term11    = (K_11(p) * pow(cos(p->theta), 2.)
+                          + K_33(p) * pow(sin(p->theta), 2.)
+                          + 2. * K_13(p) * sin(p->theta) * cos(p->theta));
+        double term22    = K_22(p);
+        double ans       = prefactor * (term11 - term22);
+        return ans;
+}
 
 double alpha_V(struct params *p)
 {
