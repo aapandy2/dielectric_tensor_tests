@@ -177,3 +177,8 @@ double K_32(struct params * p)
 	return prefactor * ans;
 //	return ans;
 }
+
+double K_23(struct params * p)
+{
+	return -K_32(p);
+}

@@ -28,6 +28,19 @@ int set_params(struct params *p)
 	return 1;
 }
 
+double alpha_I(struct params *p)
+{
+	p->real          = 0;
+        double prefactor = 2. * M_PI * p->epsilon0 * p->omega / p->c;
+        double term11    = (K_11(p) * pow(cos(p->theta), 2.)  
+			  + K_33(p) * pow(sin(p->theta), 2.)
+			  + 2. * K_13(p) * sin(p->theta) * cos(p->theta));
+	double term22    = K_22(p);
+        double ans       = prefactor * (term11 + term22);
+        return ans;
+}
+
+
 double alpha_V(struct params *p)
 {
 	p->real          = 1;
@@ -41,21 +54,29 @@ int main(void)
 {
         struct params p;
 	set_params(&p);
-	p.omega = 1. * p.omega_c;
+	p.omega = 5. * p.omega_c;
 	p.gamma = 1.5;
 	p.real  = 0;
-	double i = 1.;
-	while(i < 10)
-	{
-		printf("\n%e	%e", i, tau_integrator_33(i, &p));
-		i = i + 0.05;
-	}
-	printf("\n");
-
+//	double i = 1.;
+//	while(i < 10)
+//	{
+//		printf("\n%e	%e", i, tau_integrator_33(i, &p));
+//		i = i + 0.05;
+//	}
+//	printf("\n");
+//
 //	printf("\n%e\n", tau_integrator_33(2.01, &p));
-//	printf("\n%e\n", K_22(&p));
+//	printf("\nK_11:	%e\n", K_11(&p));
+//	printf("\nK_12: %e\n", K_12(&p));
+//	printf("\nK_13: %e\n", K_13(&p));
+//	printf("\nK_21: %e\n", K_21(&p));
+//	printf("\nK_22: %e\n", K_22(&p));
+//	printf("\nK_23: %e\n", K_23(&p));
+//	printf("\nK_31: %e\n", K_31(&p));
+//	printf("\nK_32: %e\n", K_32(&p));
+//	printf("\nK_33: %e\n", K_33(&p));
 //	printf("\n%e	%e\n", 	start_search_12(&p), start_search_32(&p));	
-//	printf("\n%e	%e\n", p.omega/p.omega_c, alpha_V(&p));
+	printf("\n%e	%e\n", p.omega/p.omega_c, alpha_I(&p));
 
 }
 

@@ -174,68 +174,35 @@ double tau_integrator_33(double gamma, void * parameters)
 	return ans_tot * sign_correction; //+ I_3_limit_integral;
 }
 
-//double start_search_12(struct params * params)
-//{
-//	double tolerance = 0.1;
-//	double step      = 0.1;
-//	double gamma     = 1.0;
-//	double diff      = tolerance + 10.;
-//
-//	/* describe this later */
-//	if(params->omega/params->omega_c < 10.)
-//	{
-//		return 1.;
-//	}
-//
-//
-//	double fac1 = 0.;
-//	double fac2 = 0.;
-//	while(diff > tolerance)
-//	{
-//		params->resolution_factor = 1;
-//		fac1 = tau_integrator_12(gamma, params); //need to set res_factor to 1 here
-//		params->resolution_factor = 2;
-//		fac2 = tau_integrator_12(gamma, params); //need to set res_factor to 2 here
-//		if(fac1 != 0. && fac2 != 0.)
-//		{
-//			diff = fabs((fac2 - fac1)/fac2);
-//		}
-//		gamma += step;
-//	}
-//	//last iteration of while loop takes 1 step after finding correct answer
-//	//so we subtract that off
-//	return (gamma - step);
-//}
-//
-//double K_12(struct params * p)
-//{
-////	double prefactor = 1. * p->omega_p*p->omega_p / (p->omega * p->omega)
-////                           * 1./(2. * p->theta_e*p->theta_e * gsl_sf_bessel_Kn(2, 1./p->theta_e));
-//
-//	double prefactor = 2. * M_PI * p->omega_p*p->omega_p / (p->omega * p->omega);
-//	
-//	gsl_function F;
-//        F.function = &tau_integrator_12;
-//        F.params   = p;
-//	gsl_integration_workspace * w = gsl_integration_workspace_alloc(5000);
-//
-//
-//	double start  = start_search_12(p);
-////	double end    = 150.; //figure out better way to do this
-//	double ans    = 0.;
-//	double error  = 0.;
-//	size_t limit  = 50;
-//	double epsabs = 0.;
-//	double epsrel = 1e-8;
-//
-//	
-//	gsl_set_error_handler_off();
-//
-////	gsl_integration_qng(&F, start, end, epsabs, epsrel, &ans, &error, &limit);
-//
-//	gsl_integration_qagiu(&F, start, 0., 1e-8, limit, w, &ans, &error);
-//	gsl_integration_workspace_free(w);
-//
-//	return prefactor * ans;
-////	return ans;
-//}
+double K_33(struct params * p)
+{
+//	double prefactor = 1. * p->omega_p*p->omega_p / (p->omega * p->omega)
+//                           * 1./(2. * p->theta_e*p->theta_e * gsl_sf_bessel_Kn(2, 1./p->theta_e));
+
+	double prefactor = 2. * M_PI * p->omega_p*p->omega_p / (p->omega * p->omega);
+	
+	gsl_function F;
+        F.function = &tau_integrator_33;
+        F.params   = p;
+	gsl_integration_workspace * w = gsl_integration_workspace_alloc(5000);
+
+
+	double start  = 1.; //start_search_12(p);
+//	double end    = 150.; //figure out better way to do this
+	double ans    = 0.;
+	double error  = 0.;
+	size_t limit  = 50;
+	double epsabs = 0.;
+	double epsrel = 1e-8;
+
+	
+	gsl_set_error_handler_off();
+
+//	gsl_integration_qng(&F, start, end, epsabs, epsrel, &ans, &error, &limit);
+
+	gsl_integration_qagiu(&F, start, 0., 1e-8, limit, w, &ans, &error);
+	gsl_integration_workspace_free(w);
+
+	return prefactor * ans;
+//	return ans;
+}

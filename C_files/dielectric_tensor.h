@@ -36,6 +36,8 @@ double K_11(struct params * p);
 double K_22(struct params * p);
 double K_33(struct params * p);
 double K_12(struct params * p);
+double K_21(struct params * p);
+double K_23(struct params * p);
 double K_32(struct params * p);
 double K_13(struct params * p);
 double K_31(struct params * p);

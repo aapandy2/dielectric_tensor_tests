@@ -168,6 +168,6 @@ double K_11(struct params * p)
 	gsl_integration_qagiu(&F, start, 0., 1e-8, limit, w, &ans, &error);
 	gsl_integration_workspace_free(w);
 
-	return 1. + prefactor * ans;
+	return prefactor * ans;
 //	return ans;
 }
