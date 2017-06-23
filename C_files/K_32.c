@@ -16,7 +16,7 @@ double I_2_analytic(double alpha, double delta)
                 return 0.;
         }
 
-	double num   = 2. * alpha * delta * (3. * A * cos(A) + (-3. + alpha*alpha + delta*delta) * sin(A));
+	double num   = 2. * alpha * delta * (3. * A * cos(A) + (-3. + A*A) * sin(A));
 	double denom = pow(A, 5.);
 	double ans   = -num / denom;
 	return ans;

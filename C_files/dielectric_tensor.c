@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "dielectric_tensor.h"
+#include <time.h>
 
 int set_params(struct params *p)
 {
@@ -13,7 +14,7 @@ int set_params(struct params *p)
 	//parameters
 	p->B       = 1.;          //background B strength
 	p->n_e     = 1.;          //electron number density cm^-3
-	p->theta_e = 0.5;         //dimensionless electron temp
+	p->theta_e = 10.;         //dimensionless electron temp
 	p->theta   = M_PI/3.;     //observer angle
 
 	//derived quantities
@@ -63,31 +64,35 @@ double alpha_V(struct params *p)
 
 int main(void)
 {
+	clock_t start = clock(), diff;
         struct params p;
 	set_params(&p);
-	p.omega = 5. * p.omega_c;
+	p.omega = 1. * p.omega_c;
 	p.gamma = 1.5;
-	p.real  = 0;
+//	p.real  = 0;
 //	double i = 1.;
-//	while(i < 10)
+//	while(i < 150)
 //	{
 //		printf("\n%e	%e", i, tau_integrator_33(i, &p));
-//		i = i + 0.05;
+//		i = i + 2.5;
 //	}
 //	printf("\n");
-//
+
 //	printf("\n%e\n", tau_integrator_33(2.01, &p));
 //	printf("\nK_11:	%e\n", K_11(&p));
 //	printf("\nK_12: %e\n", K_12(&p));
-//	printf("\nK_13: %e\n", K_13(&p));
+	printf("\nK_13: %e\n", K_13(&p));
 //	printf("\nK_21: %e\n", K_21(&p));
 //	printf("\nK_22: %e\n", K_22(&p));
 //	printf("\nK_23: %e\n", K_23(&p));
 //	printf("\nK_31: %e\n", K_31(&p));
 //	printf("\nK_32: %e\n", K_32(&p));
 //	printf("\nK_33: %e\n", K_33(&p));
+	diff = clock() - start;
+	int msec = diff * 1000 / CLOCKS_PER_SEC;
+	printf("Time taken %d seconds %d milliseconds\n", msec/1000, msec%1000);
 //	printf("\n%e	%e\n", 	start_search_12(&p), start_search_32(&p));	
-	printf("\n%e	%e\n", p.omega/p.omega_c, alpha_I(&p));
+//	printf("\n%e	%e\n", p.omega/p.omega_c, alpha_I(&p));
 
 }
 

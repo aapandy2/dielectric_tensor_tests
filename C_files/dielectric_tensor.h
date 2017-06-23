@@ -29,6 +29,8 @@ double K_33_integrand(double tau_prime, void * parameters);
 double tau_integrator_11(double gamma, void * parameters);
 double tau_integrator_13(double gamma, void * parameters);
 double tau_integrator_33(double gamma, void * parameters);
+double tau_integrator_22(double gamma, void * parameters);
+
 double start_search_13(struct params * params);
 double start_search_11(struct params * params);
 
