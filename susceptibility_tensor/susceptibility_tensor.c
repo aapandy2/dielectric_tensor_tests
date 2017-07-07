@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <math.h>
-#include "dielectric_tensor.h"
+#include "susceptibility_tensor.h"
 #include <time.h>
 
 int set_params(struct params *p)
@@ -53,6 +53,18 @@ double alpha_Q(struct params *p)
         return ans;
 }
 
+double rho_Q(struct params *p)
+{
+        p->real          = 1;
+        double prefactor = 2. * M_PI * p->epsilon0 * p->omega / p->c;
+        double term11    = (K_11(p) * pow(cos(p->theta), 2.)
+                          + K_33(p) * pow(sin(p->theta), 2.)
+                          + 2. * K_13(p) * sin(p->theta) * cos(p->theta));
+        double term22    = K_22(p);
+        double ans       = prefactor * (term11 - term22);
+        return ans;
+}
+
 double alpha_V(struct params *p)
 {
 	p->real          = 1;
@@ -62,38 +74,48 @@ double alpha_V(struct params *p)
 	return ans;
 }
 
+double rho_V(struct params *p)
+{
+        p->real          = 0;
+        double prefactor = 4. * M_PI * p->epsilon0 * p->omega / p->c;
+        double term1     = (K_12(p) * cos(p->theta) + K_32(p) * sin(p->theta));
+        double ans       = prefactor * term1;
+        return ans;
+}
+
+double plotter(struct params p)
+{
+	double i = 1.;
+        while(i < 150)
+        {
+                printf("\n%e    %e", i, tau_integrator_11(i, &p));
+                i = i + 2;
+        }
+        printf("\n");
+
+	return 0.;
+}
+
 int main(void)
 {
+	/*start timer*/
 	clock_t start = clock(), diff;
         struct params p;
-	set_params(&p);
-	p.omega = 1. * p.omega_c;
-//	p.gamma = 1.5;
-//	p.real  = 1;
-//	double i = 1.;
-//	while(i < 150)
-//	{
-//		printf("\n%e	%e", i, tau_integrator_12(i, &p));
-//		i = i + 1.;
-//	}
-//	printf("\n");
 
-//	printf("\n%e\n", tau_integrator_33(2.01, &p));
-//	printf("\nK_11:	%e\n", K_11(&p));
-//	printf("\nK_12: %e\n", K_12(&p));
-//	printf("\nK_13: %e\n", K_13(&p));
-//	printf("\nK_21: %e\n", K_21(&p));
-//	printf("\nK_22: %e\n", K_22(&p));
-//	printf("\nK_23: %e\n", K_23(&p));
-//	printf("\nK_31: %e\n", K_31(&p));
-//	printf("\nK_32: %e\n", K_32(&p));
-//	printf("\nK_33: %e\n", K_33(&p));
-	printf("\n%e    %e\n", p.omega/p.omega_c, alpha_Q(&p));
+	/*set parameters*/
+	set_params(&p);
+	p.omega = 100. * p.omega_c;
+	p.real  = 0;
+
+	/*print gamma	gamma_integrand(gamma) with the function plotter(params)*/
+//	plotter(p);
+
+	/*print omega/omega_c	alpha_I(params)*/
+	printf("\n%e    %e\n", p.omega/p.omega_c, alpha_I(&p));
+
+	/*calculate and print elapsed time*/
 	diff = clock() - start;
 	int msec = diff * 1000 / CLOCKS_PER_SEC;
 	printf("Time taken %d seconds %d milliseconds\n", msec/1000, msec%1000);
-//	printf("\n%e	%e\n", 	start_search_12(&p), start_search_32(&p));	
-//	printf("\n%e	%e\n", p.omega/p.omega_c, alpha_I(&p));
-
 }
 
