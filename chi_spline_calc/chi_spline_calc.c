@@ -9,34 +9,7 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_integration.h>
 
-struct params
-{
-        double epsilon0;
-	double epsilon;
-	double e;
-	double m;
-	double c;
-	double B;
-	double n_e;
-	double theta;
-	double theta_e;
-	double pl_p;
-	double gamma_min;
-	double gamma_max;
-	double kappa;
-	double kappa_width;
-	double gamma_cutoff;
-	double omega_c;
-	double omega_p;
-        double omega;
-        double gamma;
-	int real;
-	int dist;
-	double (*tau_integrand)(double, void * parameters);
-	double (*gamma_integrand)(double, void * parameters);
-
-        int component;
-};
+#include "chi_spline_calc.h"
 
 int set_params(struct params *p)
 {
@@ -74,26 +47,6 @@ int set_params(struct params *p)
   return 1;
 }
 
-double spline_integrand(double gamma, double omratio, struct params * params);
-double chi_ij_integrand(double gamma, struct params * params);
-double gauss_legendre(double start, double end, struct params * params);
-
-double chi_11(struct params * params);
-double chi_12(struct params * params);
-double chi_13(struct params * params);
-double chi_22(struct params * params);
-double chi_32(struct params * params);
-double chi_33(struct params * params);
-
-double chi_ij(struct params * params);
-double end_approx(struct params * params);
-double MJ(struct params * params);
-double PL(struct params * params);
-double kappa(struct params * params);
-double kappa_to_be_normalized(double gamma, void * parameters);
-double Df(struct params * params);
-double normalize_f(double (*distribution)(double, void *), struct params * params);
-
 int main(void)
 {
   struct params p;
@@ -103,10 +56,109 @@ int main(void)
   p.omega = 1. * p.omega_c;
   p.real  = 1;
 
-  printf("\n%e", chi_12(&p));
+//  printf("\n%e", chi_12(&p));
+//  printf("\n%e", chi_32(&p));
+//  printf("\n%e", chi_22(&p));
+  printf("\n%e", alpha_V(&p));
   printf("\n");
 
   return 0;
+}
+
+/*alpha_I: returns the absorption coefficient alpha_I, for the total intensity
+ *         of light along the ray in question, for the given values of 
+ *         parameters within the struct p.
+ *
+ *@params: pointer to struct of parameters *p
+ *
+ *@returns: absorption coefficient for total intensity (Stokes I) 
+ */
+double alpha_I(struct params *p)
+{
+  p->real          = 0;
+  double prefactor = 2. * M_PI * p->epsilon0 * p->omega / p->c;
+  double term11    = (chi_11(p) * pow(cos(p->theta), 2.)  
+  		  + chi_33(p) * pow(sin(p->theta), 2.)
+  		  - 2. * chi_13(p) * sin(p->theta) * cos(p->theta));
+  double term22    = chi_22(p);
+  double ans       = prefactor * (term11 + term22);
+  return ans;
+}
+
+/*alpha_Q: returns the absorption coefficient alpha_Q, for linearly polarized
+ *         light along the ray in question, for the given values of parameters 
+ *         within the struct p.
+ *
+ *@params: pointer to struct of parameters *p
+ *
+ *@returns: absorption coefficient for linearly polarized light (Stokes Q) 
+ */
+double alpha_Q(struct params *p)
+{
+  p->real          = 0;
+  double prefactor = 2. * M_PI * p->epsilon0 * p->omega / p->c;
+  double term11    = (chi_11(p) * pow(cos(p->theta), 2.)
+                    + chi_33(p) * pow(sin(p->theta), 2.)
+                    - 2. * chi_13(p) * sin(p->theta) * cos(p->theta));
+  double term22    = chi_22(p);
+  double ans       = prefactor * (term11 - term22);
+  return ans;
+}
+
+/*rho_Q: returns the Faraday conversion coefficient rho_Q, which corresponds
+ *       to the conversion between linearly polarized and circularly
+ *       polarized light by the medium.  The coefficient is calculated for
+ *       the given values of parameters within the struct p.
+ *
+ *@params: pointer to struct of parameters *p
+ *
+ *@returns: Faraday conversion coefficient rho_Q 
+ */
+double rho_Q(struct params *p)
+{
+  p->real          = 1;
+  double prefactor = 2. * M_PI * p->epsilon0 * p->omega / p->c;
+  double term11    = (chi_11(p) * pow(cos(p->theta), 2.)
+                    + chi_33(p) * pow(sin(p->theta), 2.)
+                    - 2. * chi_13(p) * sin(p->theta) * cos(p->theta));
+  double term22    = chi_22(p);
+  double ans       = prefactor * (term22 - term11);
+  return ans;
+}
+
+/*alpha_V: returns the absorption coefficient alpha_V, for the circularly
+ *         polarized light along the ray in question, for the given values of 
+ *         parameters within the struct p.  Uses the IEEE/IAU convention for
+ *         the sign of Stokes V.
+ *
+ *@params: pointer to struct of parameters *p
+ *
+ *@returns: absorption coefficient for circularly polarized light (Stokes V) 
+ */
+double alpha_V(struct params *p)
+{
+  p->real            = 1;
+  double prefactor   = 4. * M_PI * p->epsilon0 * p->omega / p->c;
+  double term1     = (chi_12(p) * cos(p->theta) - chi_32(p) * sin(p->theta));
+  double ans       = prefactor * term1;
+  return ans;
+}
+
+/*rho_V: returns the Faraday rotation coefficient rho_V, which rotates the
+ *       plane of polarization (EVPA) for linearly polarized light,
+ *       for the given values of parameters within the struct p.
+ *
+ *@params: pointer to struct of parameters *p
+ *
+ *@returns: Faraday rotation coefficient rho_V 
+ */
+double rho_V(struct params *p)
+{
+  p->real          = 0;
+  double prefactor = 4. * M_PI * p->epsilon0 * p->omega / p->c;
+  double term1     = (chi_12(p) * cos(p->theta) - chi_32(p) * sin(p->theta));
+  double ans       = prefactor * term1;
+  return ans;
 }
 
 double end_approx(struct params * params)
@@ -429,6 +481,16 @@ double gauss_legendre(double start, double end, struct params * params)
 double spline_integrand(double gamma, double omratio, struct params * params)
 {
   static int loaded_file = 0;
+
+  //TODO: do this for all possible changeable parameters
+  static int past_component = 0;
+
+  if(past_component == 0 ||
+     past_component != params->component)
+  {
+    loaded_file = 0;
+    past_component = params->component;
+  }
 
   double myvariable;
   int i;
