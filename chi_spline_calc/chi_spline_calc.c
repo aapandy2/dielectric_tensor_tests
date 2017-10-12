@@ -590,7 +590,6 @@ double spline_integrand(double gamma, double omratio, struct params * params)
     }
 
     FILE *myfile;
-//    char fname[] = "chi_12_real_step_5.txt";
     myfile=fopen(fname, "r");
 
     for(i = 0; i < GAM_ARRAY_SIZE; i++)
@@ -608,7 +607,8 @@ double spline_integrand(double gamma, double omratio, struct params * params)
   }
 
 
-  const gsl_interp2d_type *T = gsl_interp2d_bilinear;
+//  const gsl_interp2d_type *T = gsl_interp2d_bilinear;
+  const gsl_interp2d_type *T = gsl_interp2d_bicubic;
   gsl_spline2d *spline = gsl_spline2d_alloc(T, GAM_ARRAY_SIZE, OM_ARRAY_SIZE);
   gsl_interp_accel *xacc = gsl_interp_accel_alloc();
   gsl_interp_accel *yacc = gsl_interp_accel_alloc();
