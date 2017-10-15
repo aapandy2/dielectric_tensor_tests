@@ -33,7 +33,7 @@ int set_params(struct params *p)
   p->real              = 1;   //real part = 1, imag part = 0
   
   //distribution function
-  p->dist              = 0; //MJ=0, PL=1, kappa=2
+  p->dist              = 2; //MJ=0, PL=1, kappa=2
   
   //distribution function parameters
   p->theta_e     = 10.;         //dimensionless electron temp
@@ -53,12 +53,9 @@ int main(void)
   
   /*set parameters*/
   set_params(&p);
-  p.omega = 1. * p.omega_c;
+  p.omega = 50. * p.omega_c;
   p.real  = 1;
 
-//  printf("\n%e", chi_12(&p));
-//  printf("\n%e", chi_32(&p));
-//  printf("\n%e", chi_22(&p));
   printf("\n%e", alpha_V(&p));
   printf("\n");
 
@@ -414,7 +411,7 @@ double chi_ij(struct params * params)
   double start = 1.;
   double end   = end_approx(params);
 
-  double ans = prefactor * gauss_legendre(1., 150., params);
+  double ans = prefactor * gauss_legendre(start, end, params);
 
   return ans;
 }
